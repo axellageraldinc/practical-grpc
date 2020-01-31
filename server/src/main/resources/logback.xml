@@ -1,0 +1,25 @@
+<configuration scan="true" scanPeriod="1 minutes">
+
+    <conversionRule conversionWord="clr"
+                    converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
+    <conversionRule conversionWord="wex"
+                    converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
+    <conversionRule conversionWord="wEx"
+                    converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN:-[%date{"yyyy-MM-dd'T'HH:mm:ss,SSSXXX", GMT+07:00}] ${LOG_LEVEL_PATTERN:-%5p} ${PID:- } - [%X{requestId:-}] - [%t] %-40.40logger{39} : %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}
+            </pattern>
+        </encoder>
+    </appender>
+
+    <logger name="com.gdn.sharingsession.practicalgrpc.server.grpc.interceptor.GrpcServerInterceptor"
+            level="DEBUG" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

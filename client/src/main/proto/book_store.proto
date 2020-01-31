@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package sharingsession;
+
+option optimize_for = SPEED;
+option java_package = "com.gdn.sharingsession.practicalgrpc.client.generatedproto";
+option java_outer_classname = "BookStoreProto";
+
+service BookStoreService {
+    rpc GetAllBook (GetAllBookRequest) returns (GetAllBookResponse);
+
+    rpc StreamAllBook (GetAllBookRequest) returns (stream GetBookResponse);
+
+    rpc StreamDeleteBook (stream DeleteBookRequest) returns (DeleteAllBookResponse);
+
+    rpc CreateBookOneByOne (stream CreateBookRequest) returns (stream CreateBookResponse);
+}
+
+message CreateBookRequest {
+    string title = 1;
+    string author = 2;
+}
+
+message CreateBookResponse {
+    string id = 1;
+    string title = 2;
+}
+
+message GetOneBookRequest {
+    string id = 1;
+}
+
+message GetBookResponse {
+    string id = 1;
+    string title = 2;
+}
+
+message GetAllBookRequest {
+}
+
+message GetAllBookResponse {
+    repeated GetBookResponse getBookResponses = 1;
+}
+
+message DeleteBookRequest {
+    string id = 1;
+}
+
+message DeleteBookResponse {
+    string id = 1;
+}
+
+message DeleteAllBookResponse {
+    repeated DeleteBookResponse deleteBookResponses = 1;
+}
