@@ -11,8 +11,6 @@ service BookStoreService {
 
     rpc StreamAllBook (GetAllBookRequest) returns (stream GetBookResponse);
 
-    rpc StreamDeleteBook (stream DeleteBookRequest) returns (DeleteAllBookResponse);
-
     rpc CreateBookOneByOne (stream CreateBookRequest) returns (stream CreateBookResponse);
 }
 

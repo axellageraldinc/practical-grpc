@@ -3,7 +3,6 @@ package com.gdn.sharingsession.practicalgrpc.client.service.impl;
 import com.gdn.sharingsession.practicalgrpc.client.generatedproto.BookStoreProto;
 import com.gdn.sharingsession.practicalgrpc.client.generatedproto.ReactorBookStoreServiceGrpc;
 import com.gdn.sharingsession.practicalgrpc.client.model.web.request.CreateBookRequest;
-import com.gdn.sharingsession.practicalgrpc.client.model.web.request.DeleteBookRequest;
 import com.gdn.sharingsession.practicalgrpc.client.model.web.response.BookResponse;
 import com.gdn.sharingsession.practicalgrpc.client.service.BookStoreReactiveService;
 import lombok.RequiredArgsConstructor;
@@ -35,10 +34,10 @@ public class BookStoreReactiveServiceImpl implements BookStoreReactiveService {
         .build())
         .publishOn(commonScheduler)
         .map(BookStoreProto.GetAllBookResponse::getGetBookResponsesList)
-        .map(this::toBookResponsesFromGetBookResponses);
+        .map(this::toBookResponses);
   }
 
-  private List<BookResponse> toBookResponsesFromGetBookResponses(List<BookStoreProto.GetBookResponse> getBookResponses) {
+  private List<BookResponse> toBookResponses(List<BookStoreProto.GetBookResponse> getBookResponses) {
     return getBookResponses
         .stream()
         .map(this::toBookResponse)
@@ -58,34 +57,6 @@ public class BookStoreReactiveServiceImpl implements BookStoreReactiveService {
         .build())
         .publishOn(commonScheduler)
         .map(this::toBookResponse);
-  }
-
-  @Override
-  public Mono<List<BookResponse>> streamDeleteBook(DeleteBookRequest deleteBookRequest) {
-    Flux<BookStoreProto.DeleteBookRequest> deleteBookRequestFlux =
-        Flux.fromIterable(deleteBookRequest.getIds())
-            .map(this::toDeleteBookRequest)
-            .delayElements(Duration.ofMillis(500));
-    return bookStoreServiceGrpcReactorStub.streamDeleteBook(deleteBookRequestFlux)
-        .publishOn(commonScheduler)
-        .map(BookStoreProto.DeleteAllBookResponse::getDeleteBookResponsesList)
-        .map(this::toBookResponsesFromDeleteBookResponses);
-  }
-
-  private BookStoreProto.DeleteBookRequest toDeleteBookRequest(String id) {
-    return BookStoreProto.DeleteBookRequest.newBuilder()
-        .setId(id)
-        .build();
-  }
-
-  private List<BookResponse> toBookResponsesFromDeleteBookResponses
-      (List<BookStoreProto.DeleteBookResponse> deleteBookResponses) {
-    return deleteBookResponses
-        .stream()
-        .map(deleteBookResponse -> BookResponse.builder()
-            .id(deleteBookResponse.getId())
-            .build())
-        .collect(Collectors.toList());
   }
 
   @Override
