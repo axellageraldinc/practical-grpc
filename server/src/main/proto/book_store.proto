@@ -1,8 +1,9 @@
 syntax = "proto3";
 
+import "google/protobuf/wrappers.proto";
+
 package sharingsession;
 
-option optimize_for = SPEED;
 option java_package = "com.gdn.sharingsession.practicalgrpc.server.generatedproto";
 option java_outer_classname = "BookStoreProto";
 
