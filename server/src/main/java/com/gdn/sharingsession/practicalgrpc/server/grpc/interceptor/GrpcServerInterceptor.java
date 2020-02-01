@@ -31,6 +31,8 @@ public class GrpcServerInterceptor implements ServerInterceptor {
   public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call,
       Metadata headers,
       ServerCallHandler<ReqT, RespT> next) {
+    setRequiredParameter(headers);
+
     log.debug("[{} - {}] Incoming request",
         call.getMethodDescriptor().getFullMethodName(),
         call.getMethodDescriptor().getType());
@@ -39,9 +41,8 @@ public class GrpcServerInterceptor implements ServerInterceptor {
         call.getMethodDescriptor().getFullMethodName(),
         call.getMethodDescriptor().getType(), headers);
 
-    setRequiredParameter(headers);
-
-    return new GrpcServerCallListener<>(next.startCall(new GrpcServerCallForwarder<>(call),
+    return new GrpcServerCallListener<>(next.startCall(new GrpcServerCallForwarder<>(call,
+            requiredParameterAsciiMarshaller, requiredParameterHelper),
         headers), call.getMethodDescriptor());
   }
 
@@ -78,16 +79,33 @@ public class GrpcServerInterceptor implements ServerInterceptor {
 
   private static class GrpcServerCallForwarder<ReqT, ResT>
       extends ForwardingServerCall.SimpleForwardingServerCall<ReqT, ResT> {
-    protected GrpcServerCallForwarder(ServerCall<ReqT, ResT> delegate) {
+
+    private final Metadata.AsciiMarshaller<RequiredParameter> requiredParameterAsciiMarshaller;
+    private final RequiredParameterHelper requiredParameterHelper;
+
+    public GrpcServerCallForwarder(ServerCall<ReqT, ResT> delegate,
+        Metadata.AsciiMarshaller<RequiredParameter> requiredParameterAsciiMarshaller,
+        RequiredParameterHelper requiredParameterHelper) {
       super(delegate);
+      this.requiredParameterAsciiMarshaller = requiredParameterAsciiMarshaller;
+      this.requiredParameterHelper = requiredParameterHelper;
     }
 
     @Override
     public void sendHeaders(Metadata headers) {
+      putRequiredParameterToHeaders(headers);
+
       log.debug("[{} - {}] Outcoming headers --> {}",
           getMethodDescriptor().getFullMethodName(),
           getMethodDescriptor().getType(), headers);
       super.sendHeaders(headers);
+    }
+
+    private void putRequiredParameterToHeaders(Metadata headers) {
+      headers.put(Metadata.Key.of(REQUIRED_PARAMETER, requiredParameterAsciiMarshaller),
+          RequiredParameter.builder()
+              .requestId(requiredParameterHelper.getRequestId())
+              .build());
     }
 
     @Override

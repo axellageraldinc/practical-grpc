@@ -7,7 +7,7 @@ import com.gdn.sharingsession.practicalgrpc.client.model.web.response.BookRespon
 import com.gdn.sharingsession.practicalgrpc.client.service.BookStoreReactiveService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.lognet.springboot.grpc.GRpcService;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 /**
  * Created by axellageraldinc.a on 1/29/2020.
  */
-@GRpcService
+@Service
 @RequiredArgsConstructor
 @Slf4j
 public class BookStoreReactiveServiceImpl implements BookStoreReactiveService {
