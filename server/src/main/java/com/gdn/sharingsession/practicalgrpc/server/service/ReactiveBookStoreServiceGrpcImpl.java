@@ -5,6 +5,8 @@ import com.gdn.sharingsession.practicalgrpc.server.generatedproto.ReactorBookSto
 import com.gdn.sharingsession.practicalgrpc.server.grpc.interceptor.GrpcServerInterceptor;
 import com.gdn.sharingsession.practicalgrpc.server.model.entity.Book;
 import com.gdn.sharingsession.practicalgrpc.server.repository.ReactiveBookRepository;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.lognet.springboot.grpc.GRpcService;
@@ -58,9 +60,17 @@ public class ReactiveBookStoreServiceGrpcImpl
   public Flux<BookStoreProto.GetBookResponse> streamAllBook(Mono<BookStoreProto.GetAllBookRequest> request) {
     return request
         .flatMapMany(getAllBookRequest -> reactiveBookRepository.findAll())
-        .delayElements(Duration.ofMillis(500)) // to simulate the streaming
         .publishOn(commonScheduler)
-        .map(this::toGetBookResponse);
+        .delayElements(Duration.ofMillis(500)) // to simulate the streaming
+        .map(book -> {
+          if (book.getTitle().equalsIgnoreCase("Error Book")) {
+            throw new RuntimeException("Intended error");
+          }
+          return toGetBookResponse(book);
+        })
+        .onErrorContinue((throwable, o) -> log.error("#streamAllBook() error for {} caused by ",
+            o,
+            throwable));
   }
 
   @Override
