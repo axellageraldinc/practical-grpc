@@ -1,5 +1,6 @@
 target/
 !.mvn/wrapper/maven-wrapper.jar
+*/.mvn
 
 ### STS ###
 .apt_generated
@@ -26,3 +27,5 @@ nbdist/
 ### Log ###
 logs/
 *.log
+/server/.mvn/
+/client/.mvn/
