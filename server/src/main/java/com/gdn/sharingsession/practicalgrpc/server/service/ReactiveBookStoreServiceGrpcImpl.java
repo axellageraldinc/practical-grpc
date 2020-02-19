@@ -68,9 +68,7 @@ public class ReactiveBookStoreServiceGrpcImpl
           }
           return toGetBookResponse(book);
         })
-        .onErrorContinue((throwable, o) -> log.error("#streamAllBook() error for {} caused by ",
-            o,
-            throwable));
+        .onErrorResume(throwable -> Flux.just(BookStoreProto.GetBookResponse.newBuilder().build()));
   }
 
   @Override

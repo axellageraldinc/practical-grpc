@@ -8,6 +8,7 @@ import com.gdn.sharingsession.practicalgrpc.client.service.BookStoreReactiveServ
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
@@ -56,6 +57,7 @@ public class BookStoreReactiveServiceImpl implements BookStoreReactiveService {
     return bookStoreServiceGrpcReactorStub.streamAllBook(BookStoreProto.GetAllBookRequest.newBuilder()
         .build())
         .publishOn(commonScheduler)
+        .filter(getBookResponse -> !StringUtils.isEmpty(getBookResponse.getId()))
         .map(this::toBookResponse);
   }
 
