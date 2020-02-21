@@ -57,6 +57,7 @@ public class BookStoreReactiveServiceImpl implements BookStoreReactiveService {
     return bookStoreServiceGrpcReactorStub.streamAllBook(BookStoreProto.GetAllBookRequest.newBuilder()
         .build())
         .publishOn(commonScheduler)
+        .onErrorReturn(BookStoreProto.GetBookResponse.newBuilder().build())
         .filter(getBookResponse -> !StringUtils.isEmpty(getBookResponse.getId()))
         .map(this::toBookResponse);
   }

@@ -5,8 +5,6 @@ import com.gdn.sharingsession.practicalgrpc.server.generatedproto.ReactorBookSto
 import com.gdn.sharingsession.practicalgrpc.server.grpc.interceptor.GrpcServerInterceptor;
 import com.gdn.sharingsession.practicalgrpc.server.model.entity.Book;
 import com.gdn.sharingsession.practicalgrpc.server.repository.ReactiveBookRepository;
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.lognet.springboot.grpc.GRpcService;
@@ -16,9 +14,6 @@ import reactor.core.scheduler.Scheduler;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static java.util.Collections.emptyList;
 
 /**
  * Created by axellageraldinc.a on 1/29/2020.
@@ -62,13 +57,15 @@ public class ReactiveBookStoreServiceGrpcImpl
         .flatMapMany(getAllBookRequest -> reactiveBookRepository.findAll())
         .publishOn(commonScheduler)
         .delayElements(Duration.ofMillis(500)) // to simulate the streaming
-        .map(book -> {
+        .concatMapDelayError(book -> {
           if (book.getTitle().equalsIgnoreCase("Error Book")) {
-            throw new RuntimeException("Intended error");
+            return Flux.error(() -> new RuntimeException("Intended error for " + book));
           }
-          return toGetBookResponse(book);
+          return Flux.just(toGetBookResponse(book));
         })
-        .onErrorResume(throwable -> Flux.just(BookStoreProto.GetBookResponse.newBuilder().build()));
+        .doOnError(throwable -> log.error(
+            "#ReactiveBookStoreServiceGrpcImpl streamAllBook() error caused by ",
+            throwable));
   }
 
   @Override
