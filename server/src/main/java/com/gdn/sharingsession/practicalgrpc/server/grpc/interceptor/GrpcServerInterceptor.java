@@ -27,6 +27,9 @@ public class GrpcServerInterceptor implements ServerInterceptor {
   private final RequiredParameterHelper requiredParameterHelper;
   private final Metadata.AsciiMarshaller<RequiredParameter> requiredParameterAsciiMarshaller;
 
+  /**
+   * Intercept every call coming to this gRPC server.
+   */
   @Override
   public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call,
       Metadata headers,
@@ -46,6 +49,11 @@ public class GrpcServerInterceptor implements ServerInterceptor {
         headers), call.getMethodDescriptor());
   }
 
+  /**
+   * Set required parameter from request to tracer
+   *
+   * @param headers the headers (metadata) coming from gRPC request
+   */
   private void setRequiredParameter(Metadata headers) {
     requiredParameterHelper.set(RequiredParameter.builder()
         .requestId(Optional.ofNullable(headers.get(Metadata.Key.of(REQUIRED_PARAMETER,

@@ -15,6 +15,12 @@ public class RequiredParameterAsciiMarshaller
 
   private final ObjectMapper objectMapper;
 
+  /**
+   * Marshall a required parameter object as string
+   *
+   * @param value the required parameter to be marshalled
+   * @return the marshalled required parameter
+   */
   @Override
   public String toAsciiString(RequiredParameter value) {
     try {
@@ -25,6 +31,12 @@ public class RequiredParameterAsciiMarshaller
     return "";
   }
 
+  /**
+   * Unmarshal a marshalled required parameter
+   *
+   * @param serialized marshalled required parameter (ascii string)
+   * @return unmarshaled required parameter
+   */
   @Override
   public RequiredParameter parseAsciiString(String serialized) {
     try {

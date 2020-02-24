@@ -29,6 +29,11 @@ public class BookStoreReactiveServiceImpl implements BookStoreReactiveService {
       bookStoreServiceGrpcReactorStub;
   private final Scheduler commonScheduler;
 
+  /**
+   * Unary call
+   *
+   * @return list of books
+   */
   @Override
   public Mono<List<BookResponse>> getAllBooks() {
     return bookStoreServiceGrpcReactorStub.getAllBook(BookStoreProto.GetAllBookRequest.newBuilder()
@@ -52,6 +57,11 @@ public class BookStoreReactiveServiceImpl implements BookStoreReactiveService {
         .build();
   }
 
+  /**
+   * Server-streaming
+   *
+   * @return streaming books
+   */
   @Override
   public Flux<BookResponse> streamAllBooks() {
     return bookStoreServiceGrpcReactorStub.streamAllBook(BookStoreProto.GetAllBookRequest.newBuilder()
@@ -62,6 +72,35 @@ public class BookStoreReactiveServiceImpl implements BookStoreReactiveService {
         .map(this::toBookResponse);
   }
 
+  /**
+   * Client-streaming
+   *
+   * @param createBookRequest book to be created in bulk (contains multiple titles) (emitted one-by-one to server to simulate client-streaming)
+   * @return created books
+   */
+  @Override
+  public Mono<List<BookResponse>> createBookBulk(CreateBookRequest createBookRequest) {
+    Flux<BookStoreProto.CreateBookRequest> createBookRequestFlux =
+        Flux.fromIterable(createBookRequest.getTitles())
+            .map(title -> BookStoreProto.CreateBookRequest.newBuilder()
+                .setTitle(title)
+                .build());
+    return bookStoreServiceGrpcReactorStub.createBookBulk(createBookRequestFlux)
+        .map(createBulkBookResponse -> createBulkBookResponse.getCreateBookResponsesList()
+            .stream()
+            .map(createBookResponse -> BookResponse.builder()
+                .id(createBookResponse.getId())
+                .title(createBookResponse.getTitle())
+                .build())
+            .collect(Collectors.toList()));
+  }
+
+  /**
+   * Bidirectional-streaming
+   *
+   * @param createBookRequest book to be created in server
+   * @return created book (emitted one-by-one)
+   */
   @Override
   public Flux<BookResponse> createBookOneByOne(CreateBookRequest createBookRequest) {
     Flux<BookStoreProto.CreateBookRequest> createBookRequestFlux =

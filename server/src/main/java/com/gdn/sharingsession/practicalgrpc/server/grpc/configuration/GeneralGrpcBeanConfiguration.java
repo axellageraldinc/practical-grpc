@@ -16,11 +16,24 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class GeneralGrpcBeanConfiguration {
+  /**
+   * Declare an ascii marshaller for required parameter as a bean. This marshaller will be used to marshall a required parameter as ascii.
+   *
+   * @param objectMapper Jackson's object mapper
+   * @return the ascii marshaller for required parameter
+   */
   @Bean
   public Metadata.AsciiMarshaller<RequiredParameter> requiredParameterAsciiMarshaller(ObjectMapper objectMapper) {
     return new RequiredParameterAsciiMarshaller(objectMapper);
   }
 
+  /**
+   * Declaring server interceptor as a bean. This will act as an interceptor on any incoming request AND outcoming response.
+   *
+   * @param requiredParameterHelper          helper for required parameter (parameter which is passed around on each request for tracing)
+   * @param requiredParameterAsciiMarshaller ascii marshaller to marshal an object as ascii
+   * @return the server interceptor
+   */
   @Bean
   @GRpcGlobalInterceptor
   public ServerInterceptor grpcServerInterceptor(RequiredParameterHelper requiredParameterHelper,

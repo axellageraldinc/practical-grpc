@@ -21,6 +21,9 @@ public class GeneralGrpcBeanConfiguration {
   @Value("${grpc.server.host}")
   private String serverHost;
 
+  /**
+   * @return Defining the gRPC channel (server address)
+   */
   @Bean
   public Channel channel() {
     return ManagedChannelBuilder
@@ -29,12 +32,25 @@ public class GeneralGrpcBeanConfiguration {
         .build();
   }
 
+  /**
+   * Declare an ascii marshaller for required parameter as a bean. This marshaller will be used to marshall a required parameter as ascii.
+   *
+   * @param objectMapper Jackson's object mapper
+   * @return the ascii marshaller for required parameter
+   */
   @Bean
   public Metadata.AsciiMarshaller<RequiredParameter> requiredParameterAsciiMarshaller(
       ObjectMapper objectMapper) {
     return new RequiredParameterAsciiMarshaller(objectMapper);
   }
 
+  /**
+   * Declaring client interceptor as a bean. This interceptor will intercept every outcoming request and incoming response.
+   *
+   * @param requiredParameterHelper          helper for required parameter (parameter which is passed around on each request for tracing)
+   * @param requiredParameterAsciiMarshaller ascii marshaller to marshal an object as ascii
+   * @return the client interceptor
+   */
   @Bean
   public ClientInterceptor grpcInterceptor(
       Metadata.AsciiMarshaller<RequiredParameter> requiredParameterAsciiMarshaller,

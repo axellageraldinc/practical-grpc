@@ -15,5 +15,7 @@ public interface BookStoreReactiveService {
 
   Flux<BookResponse> streamAllBooks();
 
+  Mono<List<BookResponse>> createBookBulk(CreateBookRequest createBookRequest);
+
   Flux<BookResponse> createBookOneByOne(CreateBookRequest createBookRequest);
 }

@@ -11,6 +11,13 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class GrpcReactiveClientConfiguration {
+  /**
+   * Declaring the STUB as a bean.
+   *
+   * @param channel the channel to connect to gRPC server
+   * @param grpcInterceptor the client interceptor desired for this particular stub
+   * @return the stub
+   */
   @Bean
   public ReactorBookStoreServiceGrpc.ReactorBookStoreServiceStub bookStoreServiceGrpcReactorStub(
       Channel channel,

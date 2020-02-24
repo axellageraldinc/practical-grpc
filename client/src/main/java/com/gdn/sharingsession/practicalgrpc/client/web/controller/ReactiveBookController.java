@@ -43,6 +43,19 @@ public class ReactiveBookController {
         .subscribeOn(commonScheduler);
   }
 
+  @PostMapping(
+      value = "/client-stream",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  public Mono<ResponseEntity<BaseResponse<List<BookResponse>>>> createBookBulk(
+      @RequestBody @Valid CreateBookRequest createBookRequest) {
+    return bookStoreReactiveService.createBookBulk(createBookRequest)
+        .map(this::ok)
+        .map(ResponseEntity::ok)
+        .subscribeOn(commonScheduler);
+  }
+
   @GetMapping(
       value = "/server-stream",
       produces = MediaType.APPLICATION_JSON_VALUE

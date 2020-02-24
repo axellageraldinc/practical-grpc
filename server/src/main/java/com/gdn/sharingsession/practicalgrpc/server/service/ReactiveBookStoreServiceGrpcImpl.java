@@ -14,6 +14,7 @@ import reactor.core.scheduler.Scheduler;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by axellageraldinc.a on 1/29/2020.
@@ -27,6 +28,12 @@ public class ReactiveBookStoreServiceGrpcImpl
   private final ReactiveBookRepository reactiveBookRepository;
   private final Scheduler commonScheduler;
 
+  /**
+   * Unary call (get all book from DB)
+   *
+   * @param request empty request, since gRPC demands every RPC call to have at least one request
+   * @return all books in single list
+   */
   @Override
   public Mono<BookStoreProto.GetAllBookResponse> getAllBook(Mono<BookStoreProto.GetAllBookRequest> request) {
     return request
@@ -51,6 +58,12 @@ public class ReactiveBookStoreServiceGrpcImpl
         .build();
   }
 
+  /**
+   * Server-streaming
+   *
+   * @param request empty request, since gRPC demands every RPC call to have at least one request
+   * @return each book from DB (emitted one-by-one as a stream)
+   */
   @Override
   public Flux<BookStoreProto.GetBookResponse> streamAllBook(Mono<BookStoreProto.GetAllBookRequest> request) {
     return request
@@ -68,18 +81,55 @@ public class ReactiveBookStoreServiceGrpcImpl
             throwable));
   }
 
+  /**
+   * Client-streaming
+   *
+   * @param request the book created, emitted one-by-one as a stream
+   * @return a single response, notifying the client that the bulk insert is done
+   */
   @Override
-  public Flux<BookStoreProto.CreateBookResponse> createBookOneByOne(Flux<BookStoreProto.CreateBookRequest> request) {
+  public Mono<BookStoreProto.CreateBulkBookResponse> createBookBulk(Flux<BookStoreProto.CreateBookRequest> request) {
     return request
+        .collectList()
+        .flatMapMany(createBookRequests -> reactiveBookRepository.saveAll(toBooks(createBookRequests)))
+        .collectList()
+        .map(books -> BookStoreProto.CreateBulkBookResponse.newBuilder()
+            .addAllCreateBookResponses(toCreateBookResponses(books))
+            .build());
+  }
+
+  private List<Book> toBooks(List<BookStoreProto.CreateBookRequest> createBookRequests) {
+    return createBookRequests
+        .stream()
         .map(this::toBook)
-        .flatMap(reactiveBookRepository::save)
-        .map(this::toCreateBookResponse);
+        .collect(Collectors.toList());
   }
 
   private Book toBook(BookStoreProto.CreateBookRequest createBookRequest) {
     return Book.builder()
         .title(createBookRequest.getTitle())
         .build();
+  }
+
+  private List<BookStoreProto.CreateBookResponse> toCreateBookResponses(List<Book> books) {
+    return books
+        .stream()
+        .map(this::toCreateBookResponse)
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Bidirectional-streaming
+   *
+   * @param request the book created, emitted one-by-one as a stream
+   * @return the created book, emitted one-by-one as a stream
+   */
+  @Override
+  public Flux<BookStoreProto.CreateBookResponse> createBookOneByOne(Flux<BookStoreProto.CreateBookRequest> request) {
+    return request
+        .map(this::toBook)
+        .flatMap(reactiveBookRepository::save)
+        .map(this::toCreateBookResponse);
   }
 
   private BookStoreProto.CreateBookResponse toCreateBookResponse(Book book) {

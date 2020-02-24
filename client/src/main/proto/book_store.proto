@@ -12,6 +12,8 @@ service BookStoreService {
 
     rpc StreamAllBook (GetAllBookRequest) returns (stream GetBookResponse);
 
+    rpc CreateBookBulk (stream CreateBookRequest) returns (CreateBulkBookResponse);
+
     rpc CreateBookOneByOne (stream CreateBookRequest) returns (stream CreateBookResponse);
 }
 
@@ -25,8 +27,8 @@ message CreateBookResponse {
     string title = 2;
 }
 
-message GetOneBookRequest {
-    string id = 1;
+message CreateBulkBookResponse {
+    repeated CreateBookResponse createBookResponses = 1;
 }
 
 message GetBookResponse {
@@ -39,16 +41,4 @@ message GetAllBookRequest {
 
 message GetAllBookResponse {
     repeated GetBookResponse getBookResponses = 1;
-}
-
-message DeleteBookRequest {
-    string id = 1;
-}
-
-message DeleteBookResponse {
-    string id = 1;
-}
-
-message DeleteAllBookResponse {
-    repeated DeleteBookResponse deleteBookResponses = 1;
 }
